@@ -6,7 +6,6 @@ import
 import foogether.users.utils.ResponseMessage;
 import foogether.users.web.dto.DefaultResponse;
 import foogether.users.web.dto.LoginDto;
-import foogether.users.web.dto.UserDto;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;

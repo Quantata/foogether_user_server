@@ -1,17 +1,13 @@
 package foogether.users.web.controller;
 
-import foogether.users.service.JwtService;
 import foogether.users.service.S3FileUploadService;
 import foogether.users.service.UserService;
-import foogether.users.service.UserServiceImpl;
-import foogether.users.utils.PasswordIncoder;
-import foogether.users.utils.ResponseMessage;
+import foogether.users.utils.PasswordEncoder;
 import foogether.users.utils.auth.Auth;
 import foogether.users.web.dto.DefaultResponse;
 import foogether.users.web.dto.UserDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -19,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import javax.xml.ws.Response;
 
 import static foogether.users.web.dto.DefaultResponse.FAIL_AUTHORIZATION_RES;
 import static foogether.users.web.dto.DefaultResponse.FAIL_DEFAULT_RES;
@@ -48,8 +43,8 @@ public class UserController {
     UserService userService;
     @Autowired
     private S3FileUploadService s3FileUploadService;
-    @Autowired
-    private JwtService jwtService;
+//    @Autowired
+//    private JwtService jwtService;
 
     /* 회원 정보 조회 */
     /* 회원 권한 조정 */
@@ -60,7 +55,7 @@ public class UserController {
     @Auth
     @PostMapping("/{userIdx}")
     public ResponseEntity updateUser(
-            @RequestHeader(value = "Authorization") final String header,
+            @RequestHeader(value = "Authorization", required = false) final String header,
             @Valid UserDto userDto,
             BindingResult bindingResult,
             @RequestPart(value = "file", required = true)
@@ -68,8 +63,8 @@ public class UserController {
     ){
 
         DefaultResponse<UserDto> defaultResponse;
-        if(jwtService.checkAuth(header, userDto.getIdx()))
-        {
+//        if(jwtService.checkAuth(header, userDto.getIdx()))
+//        {
             try {
             if(bindingResult.hasErrors()){
                 defaultResponse = DefaultResponse.res("fail",
@@ -79,16 +74,16 @@ public class UserController {
             }
             String imgUrl = s3FileUploadService.upload(img);
             userDto.setProfileImg(imgUrl);
-            userDto.setPassword(PasswordIncoder.incodePwd(userDto.getPassword()));
+            userDto.setPassword(PasswordEncoder.incodePwd(userDto.getPassword()));
             return new ResponseEntity<>(userService.saveUser(userDto), HttpStatus.OK);
 
             } catch (Exception e) {
                 log.error(e.getMessage());
                 return new ResponseEntity<>(FAIL_DEFAULT_RES, HttpStatus.INTERNAL_SERVER_ERROR);
             }
-        } else {
-            return new ResponseEntity(FAIL_AUTHORIZATION_RES, HttpStatus.UNAUTHORIZED);
-        }
+//        } else {
+//            return new ResponseEntity(FAIL_AUTHORIZATION_RES, HttpStatus.UNAUTHORIZED);
+//        }
 
     }
 
@@ -111,7 +106,7 @@ public class UserController {
             }
             String imgUrl = s3FileUploadService.upload(img);
             userDto.setProfileImg(imgUrl);
-            userDto.setPassword(PasswordIncoder.incodePwd(userDto.getPassword()));
+            userDto.setPassword(PasswordEncoder.incodePwd(userDto.getPassword()));
             return new ResponseEntity<>(userService.saveUser(userDto), HttpStatus.OK);
 
         } catch (Exception e) {

@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 @Component
 @Aspect
 @RequiredArgsConstructor
+// filter와 같은 역할
 public class AuthAspect {
     private final static String AUTHORIZATION = "Authorization";
 
@@ -47,7 +48,6 @@ public class AuthAspect {
     //항상 @annotation 패키지 이름을 실제 사용할 annotation 경로로 맞춰줘야 한다.
     @Around("@annotation(foogether.users.utils.auth.Auth)")
     public Object around(final ProceedingJoinPoint pjp) throws Throwable {
-        log.info("aspect >>>> ");
         final String jwt = httpServletRequest.getHeader(AUTHORIZATION);
         //토큰 존재 여부 확인
         if (jwt == null) return RES_RESPONSE_ENTITY;

@@ -23,12 +23,14 @@ import static com.auth0.jwt.JWT.require;
 @Service
 public class JwtService {
 
-//    @Value("${JWT.ISSUER}")
-    @Value("${security.oauth2.client.client-id}")
+    @Value("${JWT.ISSUER}")
+//    @Value("${spring.security.oauth2.resourceserver.opaquetoken.client-id}")
+//    @Value("${jwt.issuer}")
     private String ISSUER;
 
-    //    @Value("${JWT.SECRET}")
-    @Value("${security.oauth2.client.client-secret}")
+    @Value("${JWT.SECRET}")
+//    @Value("${spring.security.oauth2.resourceserver.opaquetoken.client-secret}")
+//    @Value("${jwt.secret}")
     private String SECRET;
 
     /**
@@ -47,7 +49,7 @@ public class JwtService {
             b.withExpiresAt(expiresAt());
             //토큰 해싱해서 반환
             return b.sign(Algorithm.HMAC256(SECRET));
-        } catch (JWTCreationException | UnsupportedEncodingException JwtCreationException) {
+        } catch (JWTCreationException JwtCreationException) {
             log.info(JwtCreationException.getMessage());
         }
         return null;
