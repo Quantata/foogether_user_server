@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 
 
 public class PasswordEncoder {
-    public static String incodePwd(String str){
+    public static String encodePwd(String str){
 
         String sha = "";
 

@@ -4,6 +4,6 @@ public enum UserStatus {
     ADMIN,
     USING,
     DORMANT,
-    BLOCK,
-    UNUSING
+    BLOCKED,
+    DELETE
 }

@@ -38,7 +38,7 @@ public class LoginController {
                                 .get(0).getDefaultMessage());
                 return new ResponseEntity<>(defaultResponse, HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            String hashpw = PasswordEncoder.incodePwd(loginDto.getPassword());
+            String hashpw = PasswordEncoder.encodePwd(loginDto.getPassword());
             loginDto.setPassword(hashpw);
             return new ResponseEntity<>(authService.login(loginDto), HttpStatus.OK);
 //            return null;
