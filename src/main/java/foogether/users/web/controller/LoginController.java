@@ -1,11 +1,11 @@
 package foogether.users.web.controller;
 
-import foogether.users.service.AuthService;
+import foogether.users.service.LoginServiceImpl;
 import foogether.users.service.JwtService;
 import foogether.users.utils.PasswordEncoder;
 import foogether.users.web.dto.DefaultResponse;
 import foogether.users.web.dto.LoginDto;
-import foogether.users.web.dto.UserDto;
+import foogether.users.web.dto.UserRequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ import static foogether.users.web.dto.DefaultResponse.FAIL_DEFAULT_RES;
 @RestController
 public class LoginController {
     @Autowired
-    AuthService authService;
+    LoginServiceImpl loginServiceImpl;
 
     @Autowired
     JwtService jwtService;
@@ -33,7 +33,7 @@ public class LoginController {
             BindingResult bindingResult
     ) {
 
-        DefaultResponse<UserDto> defaultResponse;
+        DefaultResponse<UserRequestDto> defaultResponse;
 
         try {
             if (bindingResult.hasErrors()) {
@@ -44,7 +44,7 @@ public class LoginController {
             }
             String hashpw = PasswordEncoder.encodePwd(loginDto.getPassword());
             loginDto.setPassword(hashpw);
-            return new ResponseEntity<>(authService.login(loginDto), HttpStatus.OK);
+            return new ResponseEntity<>(loginServiceImpl.login(loginDto), HttpStatus.OK);
 //            return null;
 
         } catch (Exception e) {

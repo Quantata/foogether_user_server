@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlEnumValue;
 @Data
 @NoArgsConstructor
 @Validated
-public class UserDto {
+public class UserRequestDto {
     // user 고유번호
     int idx;
 
@@ -57,7 +57,7 @@ public class UserDto {
     String password;
 
     // entity -> Dto
-    public UserDto(User entity){
+    public UserRequestDto(User entity){
         this.idx = entity.getIdx();
         this.emailAddr = entity.getEmailAddr();
         this.gender = entity.getGender();

@@ -5,15 +5,10 @@ import foogether.users.domain.UserStatus;
 import foogether.users.repository.UserRepository;
 import foogether.users.utils.ResponseMessage;
 import foogether.users.web.dto.DefaultResponse;
-import foogether.users.web.dto.UserDto;
-import foogether.users.web.dto.UserListRequestDto;
+import foogether.users.web.dto.UserRequestDto;
 import foogether.users.web.dto.UserResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +20,38 @@ public class UserServiceImpl implements UserService{
     @Autowired
     JwtService jwtService;
 
-    /* 회원 정보 조회 */
-    /* 로그인 */
+    /* 회원 정보 조회  - 관리자 */
+    @Override
+    public DefaultResponse<List<UserResponseDto>> findAll(String header) {
+        int adminIdx = jwtService.decode(header).getUserIdx();
+        User isAdmin = userRepository.findByIdx(adminIdx);
+
+        if(isAdmin.getUserStatus().equals(UserStatus.ADMIN)) {
+            List<User> userList = userRepository.findAll();
+            List<UserResponseDto> userResponseDtoList = new ArrayList<>();
+
+            for(User user : userList) {
+//                if(user.getUserStatus() != UserStatus.ADMIN) {}
+                userResponseDtoList.add(new UserResponseDto(user));
+
+            }
+
+            if(userResponseDtoList.size() == 0 ){
+                // 조회된 유저 정보가 없습니다.
+                return DefaultResponse.res("fail", ResponseMessage.NOT_FOUND_USER);
+            }
+            else {
+                // UserList 출력
+                return DefaultResponse.res("success", ResponseMessage.FIND_USERLIST_INFO,
+                        userResponseDtoList);
+            }
+        }
+
+        // 권한이 없습니다.
+        return DefaultResponse.res("fail", ResponseMessage.UNAUTHORIZED);
+    }
+
     /* 회원 권한 조정 */
-
-
     @Override
     public DefaultResponse updateUserState(String header, int userIdx, UserStatus userStatus) {
         int adminIdx = jwtService.decode(header).getUserIdx();
@@ -41,10 +63,10 @@ public class UserServiceImpl implements UserService{
             if(user == null){
                 return DefaultResponse.res("fail", ResponseMessage.NOT_FOUND_USER);
             }
-            UserDto userDto = new UserDto(user);
-            userDto.setUserStatus(userStatus);
+            UserRequestDto userRequestDto = new UserRequestDto(user);
+            userRequestDto.setUserStatus(userStatus);
 
-            userRepository.save(userDto.toEntity());
+            userRepository.save(userRequestDto.toEntity());
 
             return DefaultResponse.res("success", ResponseMessage.UPDATE_USER_STATUS);
         } else {
@@ -80,10 +102,10 @@ public class UserServiceImpl implements UserService{
 
     /* 회원 수정 */
     @Override
-    public DefaultResponse<UserResponseDto> updateUser(UserDto userDto) {
-        if (userDto.getIdx() != 0) {    // 수정
-            userRepository.save(userDto.toEntity());
-            User user = userRepository.findByIdx(userDto.getIdx());
+    public DefaultResponse<UserResponseDto> updateUser(UserRequestDto userRequestDto) {
+        if (userRequestDto.getIdx() != 0) {    // 수정
+            userRepository.save(userRequestDto.toEntity());
+            User user = userRepository.findByIdx(userRequestDto.getIdx());
             UserResponseDto userResponseDto = new UserResponseDto(user);
 
             return DefaultResponse.res(
@@ -99,19 +121,19 @@ public class UserServiceImpl implements UserService{
 
     /* 회원 가입 및 탈퇴 */
     @Override
-    public DefaultResponse save(UserDto userDto) {
-        if (userDto.getIdx() != 0 && userDto.getUserStatus() == UserStatus.BLOCKED) {   // 탈퇴
-            userRepository.save(userDto.toEntity());
+    public DefaultResponse save(UserRequestDto userRequestDto) {
+        if (userRequestDto.getIdx() != 0 && userRequestDto.getUserStatus() == UserStatus.BLOCKED) {   // 탈퇴
+            userRepository.save(userRequestDto.toEntity());
             return DefaultResponse.res(
                     "success", ResponseMessage.DELETE_USER
             );
         }
         else {  // 가입
             // 이메일 중복 검사
-            if(userRepository.findByPhoneNum(userDto.getPhoneNum()) != null){
+            if(userRepository.findByPhoneNum(userRequestDto.getPhoneNum()) != null){
                 return DefaultResponse.res("fail", ResponseMessage.ALREADY_USER);
             }
-            userRepository.save(userDto.toEntity());
+            userRepository.save(userRequestDto.toEntity());
             return DefaultResponse.res(
                     "success", ResponseMessage.SAVE_USER
             );

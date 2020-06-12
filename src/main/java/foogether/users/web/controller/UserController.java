@@ -1,6 +1,5 @@
 package foogether.users.web.controller;
 
-import foogether.users.domain.Entity.User;
 import foogether.users.domain.UserStatus;
 import foogether.users.service.JwtService;
 import foogether.users.service.S3FileUploadService;
@@ -9,8 +8,7 @@ import foogether.users.utils.PasswordEncoder;
 import foogether.users.utils.ResponseMessage;
 import foogether.users.utils.auth.Auth;
 import foogether.users.web.dto.DefaultResponse;
-import foogether.users.web.dto.UserDto;
-import foogether.users.web.dto.UserListRequestDto;
+import foogether.users.web.dto.UserRequestDto;
 import foogether.users.web.dto.UserResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import javax.xml.ws.Response;
 
 import java.util.List;
 
@@ -54,9 +51,7 @@ public class UserController {
     @Autowired
     private JwtService jwtService;
 
-    /* 회원 정보 조회 */
-    
-
+    /* 관리자 */
     /* 회원 권한 조정 */
     @PostMapping("/{userIdx}/userStatus/{userStatus}")
     public ResponseEntity updateUserState(
@@ -84,6 +79,21 @@ public class UserController {
         }
     }
 
+    /* 관리자 전체 회원 조회 */
+    @GetMapping("/list")
+    public ResponseEntity getUserListInfo(
+            @RequestHeader(value = "Authorization") final String header ) {
+        DefaultResponse<List<UserResponseDto>> defaultResponse;
+        try{
+            defaultResponse = userService.findAll(header);
+            return new ResponseEntity<>(defaultResponse, HttpStatus.OK);
+        } catch (Exception e){
+            log.error(e.getMessage());
+            return new ResponseEntity<>(FAIL_DEFAULT_RES, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /* 회원 정보 */
     /* 회원 리스트 조회 */
     @PostMapping("/list")
     public ResponseEntity getUserListInfo(
@@ -132,15 +142,15 @@ public class UserController {
     @DeleteMapping("")
     public ResponseEntity deleteUser(
             @RequestHeader(value = "Authorization", required = false) final String header,
-            @Valid UserDto userDto,
+            @Valid UserRequestDto userRequestDto,
             BindingResult bindingResult,
             @RequestPart(value = "file", required = true)
                     MultipartFile img
     ){
 
-        if(jwtService.checkAuth(header, userDto.getIdx()))
+        if(jwtService.checkAuth(header, userRequestDto.getIdx()))
         {
-            DefaultResponse<UserDto> defaultResponse;
+            DefaultResponse<UserRequestDto> defaultResponse;
             try {
                 if(bindingResult.hasErrors()){
                     defaultResponse = DefaultResponse.res("fail",
@@ -149,8 +159,8 @@ public class UserController {
                     return new ResponseEntity<>(defaultResponse, HttpStatus.INTERNAL_SERVER_ERROR);
                 }
 
-                userDto.setUserStatus(UserStatus.DELETE);
-                return new ResponseEntity<>(userService.save(userDto), HttpStatus.OK);
+                userRequestDto.setUserStatus(UserStatus.DELETE);
+                return new ResponseEntity<>(userService.save(userRequestDto), HttpStatus.OK);
 
             } catch (Exception e) {
                 return new ResponseEntity<>(FAIL_DEFAULT_RES, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -167,13 +177,13 @@ public class UserController {
     @PutMapping("")
     public ResponseEntity updateUser(
             @RequestHeader(value = "Authorization", required = false) final String header,
-            @Valid UserDto userDto,
+            @Valid UserRequestDto userRequestDto,
             BindingResult bindingResult,
             @RequestPart(value = "file", required = true)
                     MultipartFile img
     ){
 
-        if(jwtService.checkAuth(header, userDto.getIdx()))
+        if(jwtService.checkAuth(header, userRequestDto.getIdx()))
         {
             DefaultResponse<UserResponseDto> defaultResponse;
             try {
@@ -184,10 +194,10 @@ public class UserController {
                     return new ResponseEntity<>(defaultResponse, HttpStatus.INTERNAL_SERVER_ERROR);
                 }
                 String imgUrl = s3FileUploadService.upload(img);
-                userDto.setProfileImg(imgUrl);
+                userRequestDto.setProfileImg(imgUrl);
                 // 값은 그대로 넣어줘야함(그래야 수정 안일어남)
-                userDto.setPassword(PasswordEncoder.encodePwd(userDto.getPassword()));
-                return new ResponseEntity<>(userService.updateUser(userDto), HttpStatus.OK);
+                userRequestDto.setPassword(PasswordEncoder.encodePwd(userRequestDto.getPassword()));
+                return new ResponseEntity<>(userService.updateUser(userRequestDto), HttpStatus.OK);
 
             } catch (Exception e) {
                 return new ResponseEntity<>(FAIL_DEFAULT_RES, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -202,15 +212,15 @@ public class UserController {
     /* 회원 가입 */
     @PostMapping("")
     public ResponseEntity signUp(
-            @Valid UserDto userDto,
+            @Valid UserRequestDto userRequestDto,
             BindingResult bindingResult,
             @RequestPart(value = "file", required = true)
             MultipartFile img
             ){
 
-        DefaultResponse<UserDto> defaultResponse;
+        DefaultResponse<UserRequestDto> defaultResponse;
         try {
-            if(userDto.getIdx() != 0){
+            if(userRequestDto.getIdx() != 0){
                 defaultResponse = DefaultResponse.res("fail", ResponseMessage.BAD_PARAMETER);
                 return new ResponseEntity<>(defaultResponse, HttpStatus.BAD_REQUEST);
             }
@@ -221,9 +231,9 @@ public class UserController {
                 return new ResponseEntity<>(defaultResponse, HttpStatus.INTERNAL_SERVER_ERROR);
             }
             String imgUrl = s3FileUploadService.upload(img);
-            userDto.setProfileImg(imgUrl);
-            userDto.setPassword(PasswordEncoder.encodePwd(userDto.getPassword()));
-            return new ResponseEntity<>(userService.save(userDto), HttpStatus.OK);
+            userRequestDto.setProfileImg(imgUrl);
+            userRequestDto.setPassword(PasswordEncoder.encodePwd(userRequestDto.getPassword()));
+            return new ResponseEntity<>(userService.save(userRequestDto), HttpStatus.OK);
 
         } catch (Exception e) {
             return new ResponseEntity<>(FAIL_DEFAULT_RES, HttpStatus.INTERNAL_SERVER_ERROR);

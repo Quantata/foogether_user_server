@@ -1,17 +1,16 @@
 package foogether.users.service;
 
-import foogether.users.domain.Entity.User;
 import foogether.users.domain.UserStatus;
 import foogether.users.web.dto.DefaultResponse;
-import foogether.users.web.dto.UserDto;
-import foogether.users.web.dto.UserListRequestDto;
+import foogether.users.web.dto.UserRequestDto;
 import foogether.users.web.dto.UserResponseDto;
-import lombok.Builder;
 
 import java.util.List;
 
 public interface UserService {
-    /* 로그인 */
+    /* 전체 회원 정보 조회 - 관리자 */
+    DefaultResponse<List<UserResponseDto>> findAll(String header);
+
     /* 회원 권한 조정 */
     DefaultResponse updateUserState(String header, int userIdx, UserStatus userStatus);
 
@@ -20,9 +19,10 @@ public interface UserService {
 
     /* 내 정보 조회 */
     DefaultResponse<UserResponseDto> findUserByIdx(int userIdx);
+
     /* 회원 가입 및 탈퇴*/
-    DefaultResponse save(UserDto userDto);
+    DefaultResponse save(UserRequestDto userRequestDto);
 
     /* 회원 수정*/
-    DefaultResponse<UserResponseDto> updateUser(UserDto userDto);
+    DefaultResponse<UserResponseDto> updateUser(UserRequestDto userRequestDto);
 }

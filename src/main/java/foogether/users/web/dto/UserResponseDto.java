@@ -25,6 +25,8 @@ public class UserResponseDto {
     String profileImg;
     // 성별
     Gender gender;
+    // 상태
+    UserStatus userStatus;
 
     // entity -> Dto
     public UserResponseDto(User entity){
@@ -35,5 +37,6 @@ public class UserResponseDto {
         this.nickname = entity.getNickname();
         this.phoneNum = entity.getPhoneNum();
         this.profileImg = entity.getProfileImg();
+        this.userStatus = entity.getUserStatus();
     }
 }
