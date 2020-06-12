@@ -22,10 +22,35 @@ import java.util.List;
 public class UserServiceImpl implements UserService{
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    JwtService jwtService;
 
     /* 회원 정보 조회 */
     /* 로그인 */
     /* 회원 권한 조정 */
+
+
+    @Override
+    public DefaultResponse updateUserState(String header, int userIdx, UserStatus userStatus) {
+        int adminIdx = jwtService.decode(header).getUserIdx();
+        User isAdmin = userRepository.findByIdx(adminIdx);
+
+        if(isAdmin.getUserStatus().equals(UserStatus.ADMIN)){
+            User user = userRepository.findByIdx(userIdx);
+
+            if(user == null){
+                return DefaultResponse.res("fail", ResponseMessage.NOT_FOUND_USER);
+            }
+            UserDto userDto = new UserDto(user);
+            userDto.setUserStatus(userStatus);
+
+            userRepository.save(userDto.toEntity());
+
+            return DefaultResponse.res("success", ResponseMessage.UPDATE_USER_STATUS);
+        } else {
+            return DefaultResponse.res("fail", ResponseMessage.UNAUTHORIZED);
+        }
+    }
 
     /* 회원 리스트 조회 */
     @Override

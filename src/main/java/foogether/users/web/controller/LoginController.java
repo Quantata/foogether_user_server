@@ -1,6 +1,7 @@
 package foogether.users.web.controller;
 
 import foogether.users.service.AuthService;
+import foogether.users.service.JwtService;
 import foogether.users.utils.PasswordEncoder;
 import foogether.users.web.dto.DefaultResponse;
 import foogether.users.web.dto.LoginDto;
@@ -21,6 +22,9 @@ import static foogether.users.web.dto.DefaultResponse.FAIL_DEFAULT_RES;
 public class LoginController {
     @Autowired
     AuthService authService;
+
+    @Autowired
+    JwtService jwtService;
 
     // 로그인 구현
     @PostMapping("/login")

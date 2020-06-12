@@ -55,7 +55,34 @@ public class UserController {
     private JwtService jwtService;
 
     /* 회원 정보 조회 */
+    
+
     /* 회원 권한 조정 */
+    @PostMapping("/{userIdx}/userStatus/{userStatus}")
+    public ResponseEntity updateUserState(
+            @RequestHeader(value = "Authorization", required = false) final String header,
+            @PathVariable("userIdx") int userIdx,
+            @PathVariable("userStatus") String postUserStatus
+    ) {
+        if (jwtService.decode(header).getUserIdx() != -1) {
+
+            DefaultResponse defaultResponse;
+            try {
+                //userStatus EnumType으로 바뀜
+                UserStatus userStatus = UserStatus.valueOf(postUserStatus);
+
+                defaultResponse = userService.updateUserState(
+                        header, userIdx, userStatus);
+                return new ResponseEntity<>(defaultResponse, HttpStatus.OK);
+//            return null;
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                return new ResponseEntity<>(FAIL_DEFAULT_RES, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } else {
+            return new ResponseEntity<>(FAIL_AUTHORIZATION_RES, HttpStatus.UNAUTHORIZED);
+        }
+    }
 
     /* 회원 리스트 조회 */
     @PostMapping("/list")
@@ -65,7 +92,6 @@ public class UserController {
         try{
             defaultResponse = userService.findAllUserByIdx(userIdxList);
             return new ResponseEntity<>(defaultResponse, HttpStatus.OK);
-//            return null;
         } catch (Exception e){
             log.error(e.getMessage());
             return new ResponseEntity<>(FAIL_DEFAULT_RES, HttpStatus.INTERNAL_SERVER_ERROR);

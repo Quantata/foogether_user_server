@@ -24,13 +24,9 @@ import static com.auth0.jwt.JWT.require;
 public class JwtService {
 
     @Value("${JWT.ISSUER}")
-//    @Value("${spring.security.oauth2.resourceserver.opaquetoken.client-id}")
-//    @Value("${jwt.issuer}")
     private String ISSUER;
 
     @Value("${JWT.SECRET}")
-//    @Value("${spring.security.oauth2.resourceserver.opaquetoken.client-secret}")
-//    @Value("${jwt.secret}")
     private String SECRET;
 
     /**
